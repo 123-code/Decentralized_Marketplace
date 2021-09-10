@@ -1,4 +1,5 @@
 pragma solidity ^ 0.5.0;
+
 contract Marketplace{
     address buyer = msg.sender;
     string public name;
@@ -11,7 +12,7 @@ struct Product{
     uint id;
     string name;
     uint price;
-    address owner;
+    address  payable owner;
     bool purchased;
 }
 
@@ -19,7 +20,7 @@ event ProductAdded(
     uint id,
     string name,
     uint price,
-    address owner,
+    address  payable owner,
     bool purchased 
 );
 
@@ -31,7 +32,13 @@ modifier valid_price(uint _price){
     require(price > 0, "price entered is not valid");
 }
 
-
+event productpurchased(
+    uint id,
+    string name,
+    uint price,
+    address payable owner,
+    bool purchased
+);
 
 function list_product(string memory _name, uint _price )public name_length(_name), valid_price(_price){
     ProductCount ++;
@@ -41,6 +48,23 @@ function list_product(string memory _name, uint _price )public name_length(_name
 
 emit ProductAdded(ProductCount,_name,_price,msg.sender,false);
 
+}
+
+
+function buyproducts(uint _id)public payable {
+    Product memory _product = products[_id];
+
+    address  payable seller = _product.owner;
+
+_product.owner = msg.sender;
+
+_product.purchased = true;
+
+products[_id] = _product;
+
+address(_seller).transfer(msg.value);
+
+emit productpurchased(ProductCount,_name,_price,msg.sender,false);
 }
 
 constructor()public{
